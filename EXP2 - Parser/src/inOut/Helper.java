@@ -11,7 +11,6 @@ public class Helper {
 	
 	public void loadAttributeNames(FileInputStream inStream) throws IOException {
 		attributeNames.load(inStream);
-		System.out.print(attributeNames.get("2"));
 	}
 	
 	public void loadJSONNames(FileInputStream inStream) throws IOException {

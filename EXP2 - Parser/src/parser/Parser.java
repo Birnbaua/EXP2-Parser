@@ -7,22 +7,15 @@ import java.io.IOException;
 import java.util.List;
 
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.util.Pair;
 
 public class Parser {
-	private final ObservableList<File> files;
-	private final SimpleIntegerProperty counter = new SimpleIntegerProperty();
+	private final SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
 	
-	public Parser(ObservableList<File> files) {
-		this.files = files;
-		this.files.addListener((ListChangeListener<File>) (x) -> {
-			counter.set(0);
-			refreshCounter(x.getAddedSubList(),x.getRemoved());
-		});
+	public Parser() {
+		
 	}
 
 	public SimpleIntegerProperty getCounter() {
@@ -31,17 +24,17 @@ public class Parser {
 	
 	public List<Pair<Integer,Integer>> validate() {
 		
-		
 		return null;
 	}
 	
-	private void refreshCounter(List<? extends File> added, List<? extends File> removed) {
+	public void refreshCounter(List<? extends File> added, List<? extends File> removed) {
+		long startTime = System.currentTimeMillis();
 		added.parallelStream().forEach(x -> {
 			BufferedReader reader = null;
 			try {
 				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
 				while(reader.readLine() != null) {
-					counter.add(1);
+					counter.set(counter.get()+1);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -57,7 +50,7 @@ public class Parser {
 			try {
 				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
 				while(reader.readLine() != null) {
-					counter.subtract(1);
+					counter.set(counter.get()-1);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -67,7 +60,8 @@ public class Parser {
 				}
 			}
 		});
-		
+		long endTime = System.currentTimeMillis();
+		System.out.println((endTime-startTime));
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Fully checked");
 		alert.setContentText("Data has been counted");
