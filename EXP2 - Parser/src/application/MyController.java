@@ -1,8 +1,12 @@
 package application;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
+import inOut.Helper;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -27,6 +31,7 @@ public class MyController {
     
     private File directory;
     private Parser parser = new Parser(listView.getItems());
+    private Helper helper = new Helper();
 
     @FXML
     void onImport(ActionEvent event) {
@@ -61,5 +66,20 @@ public class MyController {
     	this.parser.getCounter().addListener((x,o,n) -> {
     		this.recordCounter.setText(String.valueOf(n.longValue()));
     	});
+    	this.recordCounter.setText("0");
+    	
+    	//load attribute names
+    	try {
+			helper.loadAttributeNames(new FileInputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
+		} catch (FileNotFoundException e) {e.printStackTrace();
+		} catch (IOException e) {e.printStackTrace();}
+		
+    	//load names of attributes in JSON file
+    	try {
+			helper.loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
+		} catch (FileNotFoundException e) {e.printStackTrace();
+		} catch (IOException e) {e.printStackTrace();}
+    	
+    	
     }
 }
