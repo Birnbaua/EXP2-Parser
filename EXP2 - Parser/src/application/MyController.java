@@ -61,8 +61,8 @@ public class MyController {
     
     @FXML
     void onValidate(ActionEvent event) {
-    	List<Pair<Integer,Integer>> flaws = this.parser.validate();
-    	
+    	List<Pair<String,Integer>> flaws = this.parser.validate(this.listView.getItems());
+    	System.out.println(flaws.size());
     }
     
     @FXML
