@@ -20,6 +20,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.text.Text;
@@ -61,7 +62,8 @@ public class MyController {
     
     @FXML
     void onValidate(ActionEvent event) {
-    	List<Pair<String,Integer>> flaws = this.parser.validate(this.listView.getItems());
+    	ProgressBar pb = new ProgressBar();
+    	List<Pair<String,Integer>> flaws = this.parser.validate(this.listView.getItems(),pb);
     	System.out.println(flaws.size());
     }
     

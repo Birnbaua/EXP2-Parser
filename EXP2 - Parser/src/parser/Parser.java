@@ -6,10 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ProgressBar;
 import javafx.util.Pair;
 
 public class Parser {
@@ -23,9 +26,12 @@ public class Parser {
 		return counter;
 	}
 	
-	public List<Pair<String,Integer>> validate(List<File> files) {
+	public List<Pair<String,Integer>> validate(List<File> files, ProgressBar pb) {
 		long startTime = System.currentTimeMillis();
 		List<Pair<String,Integer>> flawList = new LinkedList<>();
+		SimpleDoubleProperty progress = new SimpleDoubleProperty();
+		AtomicInteger num = new AtomicInteger(0);
+		pb.progressProperty().add(progress);
 		files.parallelStream().forEach(x -> {
 			BufferedReader reader = null;
 			try {
@@ -44,7 +50,9 @@ public class Parser {
 						}
 					}
 					line = reader.readLine();
+					progress.set((double)num.incrementAndGet()/counter.get());
 				}
+				progress.set(1);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
@@ -62,10 +70,11 @@ public class Parser {
 		long startTime = System.currentTimeMillis();
 		added.parallelStream().forEach(x -> {
 			BufferedReader reader = null;
+			int num = 0;
 			try {
 				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
 				while(reader.readLine() != null) {
-					counter.set(counter.get()+1);
+					num++;;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -74,14 +83,22 @@ public class Parser {
 					try {reader.close();} catch (IOException e) {e.printStackTrace();}
 				}
 			}
+			
+			/*
+			 * update counter, has to be synchronized because of parallelStream()
+			 */
+			synchronized(this.counter) {
+				counter.set(counter.get()+num);
+			}
 		});
 		
 		removed.parallelStream().forEach(x -> {
 			BufferedReader reader = null;
+			int num = 0;
 			try {
 				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
 				while(reader.readLine() != null) {
-					counter.set(counter.get()-1);
+					num++;;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -89,6 +106,12 @@ public class Parser {
 				if(reader != null) {
 					try {reader.close();} catch (IOException e) {e.printStackTrace();}
 				}
+			}
+			/*
+			 * update counter, has to be synchronized because of parallelStream()
+			 */
+			synchronized(this.counter) {
+				counter.set(counter.get()-num);
 			}
 		});
 		long endTime = System.currentTimeMillis();
