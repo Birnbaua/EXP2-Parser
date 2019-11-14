@@ -83,6 +83,7 @@ public class Parser {
 		int fileCounter = 0;
 		try {
 			writer = new BufferedWriter(new FileWriter(destination,false));
+			writer.write('[');
 			for(File file : list) {
 				reader = new BufferedReader(new FileReader(file));
 				String line = reader.readLine();
@@ -113,6 +114,7 @@ public class Parser {
 					writer.newLine();
 				}
 			}
+			writer.write(']');
 			long endTime = System.currentTimeMillis();
 			System.out.println(endTime-startTime);
 			return true;

@@ -103,7 +103,7 @@ public class MyController {
 				parser.refreshCounter(x.getAddedSubList(),x.getRemoved());
 			}
 		});
-    	int[] arr = {1,2,8,9,10,13,23,24,40,42,51,52,57,71,72};
+    	int[] arr = {1,2,8,9,10,13,23,24};
     	List<Integer> list = new LinkedList<>();
     	for(int i : arr) {
     		list.add(i);
