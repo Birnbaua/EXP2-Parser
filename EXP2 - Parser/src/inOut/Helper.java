@@ -3,11 +3,14 @@ package inOut;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 public class Helper {
 	private Properties attributeNames = new Properties();
 	private Properties attributeJSONNames = new Properties();
+	private final List<Integer> usedJSONAttributes = new LinkedList<>();
 	
 	public void loadAttributeNames(FileInputStream inStream) throws IOException {
 		attributeNames.load(inStream);
@@ -38,6 +41,10 @@ public class Helper {
 	 * @return the name of the in the JSON-Output-File if the attribute number exists. If not, returns null;
 	 */
 	public String getJSONName(int nr) {
-		return attributeNames.get(Integer.toString(nr)).toString();
+		return attributeJSONNames.get(Integer.toString(nr)).toString();
+	}
+
+	public List<Integer> getUsedJSONAttributes() {
+		return usedJSONAttributes;
 	}
 }

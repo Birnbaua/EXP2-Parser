@@ -1,13 +1,18 @@
 package parser;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.gson.Gson;
+
+import inOut.Helper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Alert;
@@ -16,6 +21,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.util.Pair;
 
 public class Parser {
+	private final Helper helper = new Helper();
 	private final SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
 	
 	public Parser() {
@@ -48,6 +54,10 @@ public class Parser {
 						if(arr[0].length() != 4 || arr[1].length() != 4) {
 							flawList.add(new Pair<String,Integer>(x.getName(),i));
 						}
+						
+						/*
+						 * space for further validation...
+						 */
 					}
 					line = reader.readLine();
 					progress.set((double)num.incrementAndGet()/counter.get());
@@ -64,6 +74,60 @@ public class Parser {
 		long endTime = System.currentTimeMillis();
 		System.out.println(endTime-startTime);
 		return flawList;
+	}
+	
+	public synchronized boolean exportAsJson(List<File> list, File destination){
+		long startTime = System.currentTimeMillis();
+		BufferedWriter writer = null;
+		BufferedReader reader = null;
+		int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
+		int fileCounter = 0;
+		try {
+			writer = new BufferedWriter(new FileWriter(destination,false));
+			for(File file : list) {
+				reader = new BufferedReader(new FileReader(file));
+				String line = reader.readLine();
+				while(line != null) {
+					String[] arr = line.split(";");
+					
+					//one object start
+					writer.write('{');
+					writer.newLine();
+					for(Integer nr : helper.getUsedJSONAttributes()) {
+						writer.write(String.format("   \"%s\": \"%s\"", this.helper.getJSONName(nr), arr[nr-1]));
+						if(nr != lastJSONAttribute) {
+							writer.write(',');
+						}
+						writer.newLine();
+					}
+					writer.write('}');
+					//one object end
+					line = reader.readLine();
+					if(line != null) {
+						writer.write(',');
+						writer.newLine();
+					}
+				}
+				fileCounter++;
+				if(fileCounter != list.size()) {
+					writer.write(',');
+					writer.newLine();
+				}
+			}
+			long endTime = System.currentTimeMillis();
+			System.out.println(endTime-startTime);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			if(writer != null) {
+				try {writer.close();} catch (IOException e) {e.printStackTrace();}
+			}
+			if(reader != null) {
+				try {reader.close();} catch (IOException e) {e.printStackTrace();}
+			}
+		}
 	}
 	
 	public void refreshCounter(List<? extends File> added, List<? extends File> removed) {
@@ -119,5 +183,9 @@ public class Parser {
 		alert.setTitle("Fully checked");
 		alert.setContentText(String.format("Data has been counted in %d mills", endTime-startTime));
 		alert.showAndWait();
+	}
+
+	public Helper getHelper() {
+		return helper;
 	}
 }

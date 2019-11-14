@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -41,7 +43,6 @@ public class MyController {
     
     private File directory;
     private Parser parser = new Parser();
-    private Helper helper = new Helper();
 
     @FXML
     void onImport(ActionEvent event) {
@@ -69,7 +70,15 @@ public class MyController {
     
     @FXML
     void onExport(ActionEvent event) {
-    	parser.refreshCounter(listView.getItems(), new LinkedList<>());
+    	Stage stage = new Stage();
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		if(directory != null) {
+			directoryChooser.setInitialDirectory(directory);
+		}
+		directoryChooser.setTitle("Choose Export Directory");
+		File file = directoryChooser.showDialog(stage);
+		
+    	parser.exportAsJson(this.listView.getItems(), new File("C:\\Users\\Andreas\\Desktop\\converted.json"));
     }
     
     @FXML
@@ -86,16 +95,22 @@ public class MyController {
 				parser.refreshCounter(x.getAddedSubList(),x.getRemoved());
 			}
 		});
+    	int[] arr = {1,2,8,9,10,13,23,24,40,42,51,52,57,71,72};
+    	List<Integer> list = new LinkedList<>();
+    	for(int i : arr) {
+    		list.add(i);
+    	}
+    	this.parser.getHelper().getUsedJSONAttributes().addAll(list);
     	
     	//load attribute names
     	try {
-			helper.loadAttributeNames(new FileInputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
+			this.parser.getHelper().loadAttributeNames(new FileInputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
 		} catch (FileNotFoundException e) {e.printStackTrace();
 		} catch (IOException e) {e.printStackTrace();}
 		
     	//load names of attributes in JSON file
     	try {
-			helper.loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
+    		this.parser.getHelper().loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
 		} catch (FileNotFoundException e) {e.printStackTrace();
 		} catch (IOException e) {e.printStackTrace();}
     	
