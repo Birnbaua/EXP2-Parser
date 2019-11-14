@@ -8,16 +8,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.google.gson.Gson;
+import java.util.concurrent.atomic.AtomicLong;
 
 import inOut.Helper;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ProgressBar;
 import javafx.util.Pair;
 
 public class Parser {
@@ -32,48 +29,50 @@ public class Parser {
 		return counter;
 	}
 	
-	public List<Pair<String,Integer>> validate(List<File> files, ProgressBar pb) {
-		long startTime = System.currentTimeMillis();
-		List<Pair<String,Integer>> flawList = new LinkedList<>();
-		SimpleDoubleProperty progress = new SimpleDoubleProperty();
-		AtomicInteger num = new AtomicInteger(0);
-		pb.progressProperty().add(progress);
-		files.parallelStream().forEach(x -> {
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
-				String line = reader.readLine();
-				int i = 0;
-				while(line != null) {
-					i++;
-					String[] arr = line.split(";");
-					if(arr.length != 95) {
-						flawList.add(new Pair<String,Integer>(x.getName(),i));
-					} else {
-						//if you want to check the individual fields, do it here
-						if(arr[0].length() != 4 || arr[1].length() != 4) {
-							flawList.add(new Pair<String,Integer>(x.getName(),i));
+	public Task<List<Pair<String,Integer>>> validate(List<File> files) {
+		return new Task<List<Pair<String,Integer>>>() {
+			@Override
+			protected List<Pair<String,Integer>> call() throws Exception {
+				long startTime = System.currentTimeMillis();
+				List<Pair<String,Integer>> flawList = new LinkedList<>();
+				AtomicLong num = new AtomicLong(0);
+				files.parallelStream().forEach(x -> {
+					BufferedReader reader = null;
+					try {
+						reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
+						String line = reader.readLine();
+						int i = 0;
+						while(line != null) {
+							i++;
+							updateProgress(num.incrementAndGet(),counter.longValue());
+							String[] arr = line.split(";");
+							if(arr.length != 95) {
+								flawList.add(new Pair<String,Integer>(x.getName(),i));
+							} else {
+								//if you want to check the individual fields, do it here
+								if(arr[0].length() != 4 || arr[1].length() != 4) {
+									flawList.add(new Pair<String,Integer>(x.getName(),i));
+								}
+								
+								/*
+								 * space for further validation...
+								 */
+							}
+							line = reader.readLine();
 						}
-						
-						/*
-						 * space for further validation...
-						 */
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if(reader != null) {
+							try {reader.close();} catch (IOException e) {e.printStackTrace();}
+						}
 					}
-					line = reader.readLine();
-					progress.set((double)num.incrementAndGet()/counter.get());
-				}
-				progress.set(1);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if(reader != null) {
-					try {reader.close();} catch (IOException e) {e.printStackTrace();}
-				}
+				});
+				long endTime = System.currentTimeMillis();
+				System.out.println(endTime-startTime);
+				return flawList;
 			}
-		});
-		long endTime = System.currentTimeMillis();
-		System.out.println(endTime-startTime);
-		return flawList;
+    	};
 	}
 	
 	public synchronized boolean exportAsJson(List<File> list, File destination){

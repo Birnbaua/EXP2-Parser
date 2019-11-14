@@ -10,11 +10,17 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.controlsfx.dialog.ProgressDialog;
 
 import inOut.Helper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
+import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -43,6 +49,7 @@ public class MyController {
     
     private File directory;
     private Parser parser = new Parser();
+    ExecutorService exec = Executors.newSingleThreadExecutor();
 
     @FXML
     void onImport(ActionEvent event) {
@@ -63,9 +70,12 @@ public class MyController {
     
     @FXML
     void onValidate(ActionEvent event) {
-    	ProgressBar pb = new ProgressBar();
-    	List<Pair<String,Integer>> flaws = this.parser.validate(this.listView.getItems(),pb);
-    	System.out.println(flaws.size());
+    	Task<List<Pair<String,Integer>>> worker = parser.validate(this.listView.getItems());
+    	ProgressDialog dialog = new ProgressDialog(worker);
+    	dialog.setTitle("Validating files.");
+    	dialog.setContentText("The program is validating all listed files now.");
+    	exec.submit(worker);
+    	dialog.showAndWait();
     }
     
     @FXML
@@ -89,8 +99,6 @@ public class MyController {
     	this.recordCounter.setText("0");
     	
     	this.listView.getItems().addListener((ListChangeListener<File>) (x) -> {
-    		SimpleIntegerProperty counter = parser.getCounter();
-			counter.set(0);
 			if(x.next()) {
 				parser.refreshCounter(x.getAddedSubList(),x.getRemoved());
 			}
