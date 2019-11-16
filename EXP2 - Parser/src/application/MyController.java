@@ -76,6 +76,9 @@ public class MyController {
     	dialog.setContentText("The program is validating all listed files now.");
     	exec.submit(worker);
     	dialog.showAndWait();
+    	
+    	//check number of invalid records
+    	System.out.println(worker.getValue().size());
     }
     
     @FXML
@@ -88,7 +91,12 @@ public class MyController {
 		directoryChooser.setTitle("Choose Export Directory");
 		File file = directoryChooser.showDialog(stage);
 		
-    	parser.exportAsJson(this.listView.getItems(), new File("C:\\Users\\Andreas\\Desktop\\converted.json"));
+		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "converted.json"));
+    	ProgressDialog dialog = new ProgressDialog(worker);
+    	dialog.setTitle("Exporting files.");
+    	dialog.setContentText("The program is exporting all listed files now.");
+    	exec.submit(worker);
+    	dialog.showAndWait();
     }
     
     @FXML
@@ -99,8 +107,20 @@ public class MyController {
     	this.recordCounter.setText("0");
     	
     	this.listView.getItems().addListener((ListChangeListener<File>) (x) -> {
+    		Task<Long> worker = null;
 			if(x.next()) {
-				parser.refreshCounter(x.getAddedSubList(),x.getRemoved());
+				worker = parser.refreshCounter(x.getAddedSubList(),x.getRemoved());
+		    	ProgressDialog dialog = new ProgressDialog(worker);
+		    	dialog.setTitle("Files are analyzed files.");
+		    	dialog.setContentText("The program is analyzing all selected files now.");
+		    	exec.submit(worker);
+		    	dialog.showAndWait();
+			}
+			if(worker != null) {
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Fully checked");
+				alert.setContentText(String.format("Data has been counted in %d mills", worker.getValue()));
+				alert.showAndWait();	
 			}
 		});
     	int[] arr = {1,2,8,9,10,13,23,24};

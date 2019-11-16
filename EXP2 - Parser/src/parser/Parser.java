@@ -53,7 +53,12 @@ public class Parser {
 								if(arr[0].length() != 4 || arr[1].length() != 4) {
 									flawList.add(new Pair<String,Integer>(x.getName(),i));
 								}
-								
+								// add attribute/record to the list 
+								for(Integer nr : helper.getUsedJSONAttributes()) {
+									if(arr[nr-1].length() == 0) {
+										flawList.add(new Pair<String,Integer>(x.getName(),i));
+									}
+								}
 								/*
 								 * space for further validation...
 								 */
@@ -75,115 +80,127 @@ public class Parser {
     	};
 	}
 	
-	public synchronized boolean exportAsJson(List<File> list, File destination){
-		long startTime = System.currentTimeMillis();
-		BufferedWriter writer = null;
-		BufferedReader reader = null;
-		int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
-		int fileCounter = 0;
-		try {
-			writer = new BufferedWriter(new FileWriter(destination,false));
-			writer.write('[');
-			for(File file : list) {
-				reader = new BufferedReader(new FileReader(file));
-				String line = reader.readLine();
-				while(line != null) {
-					String[] arr = line.split(";");
-					
-					//one object start
-					writer.write('{');
-					writer.newLine();
-					for(Integer nr : helper.getUsedJSONAttributes()) {
-						writer.write(String.format("   \"%s\": \"%s\"", this.helper.getJSONName(nr), arr[nr-1]));
-						if(nr != lastJSONAttribute) {
-							writer.write(',');
+	public Task<Boolean> exportAsJson(List<File> list, File destination){
+		return new Task<Boolean>() {
+			@Override
+			protected Boolean call() throws Exception {
+				AtomicLong num = new AtomicLong(0);
+				long startTime = System.currentTimeMillis();
+				BufferedWriter writer = null;
+				BufferedReader reader = null;
+				int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
+				int fileCounter = 0;
+				try {
+					writer = new BufferedWriter(new FileWriter(destination,false));
+					writer.write('[');
+					for(File file : list) {
+						reader = new BufferedReader(new FileReader(file));
+						String line = reader.readLine();
+						while(line != null) {
+							String[] arr = line.split(";");
+							
+							//one object start
+							writer.write('{');
+							writer.newLine();
+							for(Integer nr : helper.getUsedJSONAttributes()) {
+								writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+								if(nr != lastJSONAttribute) {
+									writer.write(',');
+								}
+								writer.newLine();
+							}
+							writer.write('}');
+							//one object end
+							line = reader.readLine();
+							if(line != null) {
+								writer.write(',');
+								writer.newLine();
+							}
+							updateProgress(num.incrementAndGet(),counter.get());
 						}
-						writer.newLine();
+						fileCounter++;
+						if(fileCounter != list.size()) {
+							writer.write(',');
+							writer.newLine();
+						}
 					}
-					writer.write('}');
-					//one object end
-					line = reader.readLine();
-					if(line != null) {
-						writer.write(',');
-						writer.newLine();
+					writer.write(']');
+					long endTime = System.currentTimeMillis();
+					System.out.println(endTime-startTime);
+					return true;
+				} catch (IOException e) {
+					e.printStackTrace();
+					return false;
+				} finally {
+					if(writer != null) {
+						try {writer.close();} catch (IOException e) {e.printStackTrace();}
 					}
-				}
-				fileCounter++;
-				if(fileCounter != list.size()) {
-					writer.write(',');
-					writer.newLine();
-				}
-			}
-			writer.write(']');
-			long endTime = System.currentTimeMillis();
-			System.out.println(endTime-startTime);
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		} finally {
-			if(writer != null) {
-				try {writer.close();} catch (IOException e) {e.printStackTrace();}
-			}
-			if(reader != null) {
-				try {reader.close();} catch (IOException e) {e.printStackTrace();}
-			}
-		}
-	}
-	
-	public void refreshCounter(List<? extends File> added, List<? extends File> removed) {
-		long startTime = System.currentTimeMillis();
-		added.parallelStream().forEach(x -> {
-			BufferedReader reader = null;
-			int num = 0;
-			try {
-				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
-				while(reader.readLine() != null) {
-					num++;;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if(reader != null) {
-					try {reader.close();} catch (IOException e) {e.printStackTrace();}
+					if(reader != null) {
+						try {reader.close();} catch (IOException e) {e.printStackTrace();}
+					}
 				}
 			}
 			
-			/*
-			 * update counter, has to be synchronized because of parallelStream()
-			 */
-			synchronized(this.counter) {
-				counter.set(counter.get()+num);
+		};
+	}
+	
+	public Task<Long> refreshCounter(List<? extends File> added, List<? extends File> removed) {
+		return new Task<Long>() {
+			@Override
+			protected Long call() throws Exception {
+				AtomicLong updater = new AtomicLong();
+				long startTime = System.currentTimeMillis();
+				added.parallelStream().forEach(x -> {
+					BufferedReader reader = null;
+					int num = 0;
+					try {
+						reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
+						while(reader.readLine() != null) {
+							num++;;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if(reader != null) {
+							try {reader.close();} catch (IOException e) {e.printStackTrace();}
+						}
+					}
+					updateProgress(updater.incrementAndGet(), added.size() + removed.size());
+					/*
+					 * update counter, has to be synchronized because of parallelStream()
+					 */
+					synchronized(counter) {
+						counter.set(counter.get()+num);
+					}
+				});
+				
+				removed.parallelStream().forEach(x -> {
+					BufferedReader reader = null;
+					int num = 0;
+					try {
+						reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
+						while(reader.readLine() != null) {
+							num++;;
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if(reader != null) {
+							try {reader.close();} catch (IOException e) {e.printStackTrace();}
+						}
+					}
+					updateProgress(updater.incrementAndGet(), added.size() + removed.size());
+					/*
+					 * update counter, has to be synchronized because of parallelStream()
+					 */
+					synchronized(counter) {
+						counter.set(counter.get()-num);
+					}
+				});
+				return System.currentTimeMillis()-startTime;
 			}
-		});
+		};
 		
-		removed.parallelStream().forEach(x -> {
-			BufferedReader reader = null;
-			int num = 0;
-			try {
-				reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
-				while(reader.readLine() != null) {
-					num++;;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if(reader != null) {
-					try {reader.close();} catch (IOException e) {e.printStackTrace();}
-				}
-			}
-			/*
-			 * update counter, has to be synchronized because of parallelStream()
-			 */
-			synchronized(this.counter) {
-				counter.set(counter.get()-num);
-			}
-		});
-		long endTime = System.currentTimeMillis();
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("Fully checked");
-		alert.setContentText(String.format("Data has been counted in %d mills", endTime-startTime));
-		alert.showAndWait();
 	}
 
 	public Helper getHelper() {
