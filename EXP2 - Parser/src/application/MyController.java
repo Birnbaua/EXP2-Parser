@@ -92,7 +92,7 @@ public class MyController {
 		directoryChooser.setTitle("Choose Export Directory");
 		File file = directoryChooser.showDialog(stage);
 		
-		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "converted.json"));
+		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"));
     	ProgressDialog dialog = new ProgressDialog(worker);
     	dialog.setTitle("Exporting files.");
     	dialog.setContentText("The program is exporting all listed files now.");
