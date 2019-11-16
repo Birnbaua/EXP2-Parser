@@ -20,6 +20,7 @@
                 <Button fx:id="importButton" mnemonicParsing="false" onAction="#onImport" text="Import Files" />
                   <Button fx:id="validateButton" mnemonicParsing="false" onAction="#onValidate" text="Validate Data" />
                   <Button fx:id="exportButton" mnemonicParsing="false" onAction="#onExport" text="Export to JSON" />
+                  <Button fx:id="editAttributes" mnemonicParsing="false" onAction="#onEdit" text="Edit attributes" />
               </buttons>
                <padding>
                   <Insets left="5.0" right="5.0" />

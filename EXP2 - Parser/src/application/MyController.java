@@ -42,6 +42,7 @@ public class MyController {
     @FXML private Button importButton;
     @FXML private Button validateButton;
     @FXML private Button exportButton;
+    @FXML private Button editButton;
     @FXML private ListView<File> listView;
     @FXML private Text recordCounter;
     @FXML private TextField getNumber;
@@ -97,6 +98,11 @@ public class MyController {
     	dialog.setContentText("The program is exporting all listed files now.");
     	exec.submit(worker);
     	dialog.showAndWait();
+    }
+    
+    @FXML
+    void onEdit() {
+    	
     }
     
     @FXML
