@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +35,7 @@ public class Parser {
 			@Override
 			protected List<Pair<String,Integer>> call() throws Exception {
 				long startTime = System.currentTimeMillis();
-				List<Pair<String,Integer>> flawList = new LinkedList<>();
+				List<Pair<String,Integer>> flawList = Collections.synchronizedList(new LinkedList<>());
 				AtomicLong num = new AtomicLong(0);
 				files.parallelStream().forEach(x -> {
 					BufferedReader reader = null;
@@ -80,7 +81,7 @@ public class Parser {
     	};
 	}
 	
-	public Task<Boolean> exportAsJson(List<File> list, File destination){
+	public Task<Boolean> exportAsJson(List<File> list, File destination, long number){
 		return new Task<Boolean>() {
 			@Override
 			protected Boolean call() throws Exception {
@@ -116,7 +117,10 @@ public class Parser {
 								writer.write(',');
 								writer.newLine();
 							}
-							updateProgress(num.incrementAndGet(),counter.get());
+							updateProgress(num.incrementAndGet(),number);
+							if(number == num.get()) {
+								return true;
+							}
 						}
 						fileCounter++;
 						if(fileCounter != list.size()) {

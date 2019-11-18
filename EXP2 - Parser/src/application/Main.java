@@ -17,6 +17,9 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.show();
+			
+			//ensure all threads are shutdown at exit
+			primaryStage.setOnCloseRequest((x) -> System.exit(0));
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

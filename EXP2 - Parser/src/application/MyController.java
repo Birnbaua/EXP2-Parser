@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.controlsfx.dialog.ProgressDialog;
 
@@ -50,7 +51,7 @@ public class MyController {
     
     private File directory;
     private Parser parser = new Parser();
-    ExecutorService exec = Executors.newSingleThreadExecutor();
+    ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 
     @FXML
     void onImport(ActionEvent event) {
@@ -92,7 +93,8 @@ public class MyController {
 		directoryChooser.setTitle("Choose Export Directory");
 		File file = directoryChooser.showDialog(stage);
 		
-		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"));
+		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
+				getAll.isSelected() ? this.parser.getCounter().longValue() : Long.parseLong(this.getNumber.getText()));
     	ProgressDialog dialog = new ProgressDialog(worker);
     	dialog.setTitle("Exporting files.");
     	dialog.setContentText("The program is exporting all listed files now.");
@@ -107,10 +109,21 @@ public class MyController {
     
     @FXML
     void initialize() {
+    	//counter
     	this.parser.getCounter().addListener((x,o,n) -> {
     		this.recordCounter.setText(String.valueOf(n.intValue()));
     	});
     	this.recordCounter.setText("0");
+    	
+    	//number of values to export
+    	this.getAll.selectedProperty().addListener((x,o,n) -> {
+    		if(n) {
+    			getNumber.setDisable(true);
+    		} else {
+    			getNumber.setDisable(false);
+    		}
+    	});
+    	this.getAll.setSelected(true);
     	
     	this.listView.getItems().addListener((ListChangeListener<File>) (x) -> {
     		Task<Long> worker = null;
@@ -129,6 +142,7 @@ public class MyController {
 				alert.showAndWait();	
 			}
 		});
+    	
     	int[] arr = {1,2,8,9,10,13,23,24};
     	List<Integer> list = new LinkedList<>();
     	for(int i : arr) {
@@ -147,7 +161,10 @@ public class MyController {
     		this.parser.getHelper().loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
 		} catch (FileNotFoundException e) {e.printStackTrace();
 		} catch (IOException e) {e.printStackTrace();}
-    	
-    	
+    }
+    
+    @Override
+    public void finalize(){
+    	exec.shutdownNow();
     }
 }
