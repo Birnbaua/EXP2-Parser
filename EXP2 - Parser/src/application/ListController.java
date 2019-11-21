@@ -37,6 +37,7 @@ public class ListController {
 			super(nr,name);
 			this.name.addListener((x,o,n) -> {
 				helper.getEXP2Attributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
+				saveButton.setStyle("-fx-background-color: tomato; ");
 			});
 		}
 	}
@@ -48,9 +49,11 @@ public class ListController {
 			this.isUsed = isUsed;
 			this.name.addListener((x,o,n) -> {
 				helper.getJSONAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
+				saveButton.setStyle("-fx-background-color: tomato; ");
 			});
 			this.isUsed.addListener((x,o,n) -> {
 				helper.getUsedAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
+				saveButton.setStyle("-fx-background-color: tomato; ");
 			});
 		}
 	}
@@ -67,6 +70,7 @@ public class ListController {
 			helper.saveJSONNames(new FileOutputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
 	    	helper.saveNames(new FileOutputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
 	    	helper.saveUsedAttributes(new FileOutputStream(new File("resources/usedAttributes.properties").getAbsolutePath()));
+	    	saveButton.setStyle("-fx-background-color: whitesmoke; ");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
