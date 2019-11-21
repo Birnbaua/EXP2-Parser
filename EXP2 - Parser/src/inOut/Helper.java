@@ -61,6 +61,10 @@ public class Helper {
 		return attributeJSONNames.get(Integer.toString(nr)).toString();
 	}
 	
+	public Boolean isUsed(int nr) {
+		return Boolean.valueOf(usedAttributes.get(Integer.toString(nr)).toString());
+	}
+	
 	public Properties getJSONAttributes() {
 		return this.attributeJSONNames;
 	}

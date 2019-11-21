@@ -74,8 +74,13 @@ public class ListController {
     }
     
     private void fillTable1() {
+    	this.tableView1.setEditable(true);
+    	this.tableView1.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     	TableColumn<Pair,Number> nr = new TableColumn<>();
     	TableColumn<Pair,String> name = new TableColumn<>();
+    	
+    	nr.setText("Attribut number");
+    	name.setText("Attribute name DDR2");
     	
     	nr.setEditable(false);
     	name.setEditable(true);
@@ -94,6 +99,8 @@ public class ListController {
     }
     
     private void fillTable2() {
+    	this.tableView2.setEditable(true);
+    	this.tableView2.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     	TableColumn<Triple,Number> nr = new TableColumn<>();
     	TableColumn<Triple,String> name = new TableColumn<>();
     	TableColumn<Triple,CheckBox> isUsed = new TableColumn<>();
@@ -113,8 +120,8 @@ public class ListController {
     	this.tableView2.getColumns().add(isUsed);
     	for(int i = 0;i<helper.getEXP2Attributes().size();i++) {
 			CheckBox cb = new CheckBox();
-			cb.setSelected(Boolean.getBoolean(helper.getUsedAttributes().get(Integer.toString(i+1)).toString()));
-    		this.tableView2.getItems().add(new Triple(i+1,helper.getAttributeName(i+1),cb));
+			cb.setSelected(helper.isUsed(i+1));
+    		this.tableView2.getItems().add(new Triple(i+1,helper.getJSONName(i+1),cb));
     	}
     }
 }

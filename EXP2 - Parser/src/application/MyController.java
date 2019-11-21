@@ -12,23 +12,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.controlsfx.dialog.ProgressDialog;
 
-import inOut.Helper;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.text.Text;
@@ -104,7 +101,21 @@ public class MyController {
     
     @FXML
     void onEdit() {
-    	
+    	ListController listController = null;
+    	Parent root;
+    	FXMLLoader loader;
+    	try {
+    		loader = new FXMLLoader(Main.class.getResource("Attributes.fxml"));
+    		root = loader.load();
+    		listController = loader.getController();
+    		listController.setHelper(this.parser.getHelper());
+    		Stage stage = new Stage();
+    		stage.setTitle("Ergebnisse");
+    		stage.setScene(new Scene(root));
+    		stage.showAndWait();
+    	} catch(IOException e) {
+    		e.printStackTrace();
+    	}
     }
     
     @FXML
@@ -159,6 +170,12 @@ public class MyController {
     	//load names of attributes in JSON file
     	try {
     		this.parser.getHelper().loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
+		} catch (FileNotFoundException e) {e.printStackTrace();
+		} catch (IOException e) {e.printStackTrace();}
+    	
+    	//load used attributes in JSON file
+    	try {
+    		this.parser.getHelper().loadUsedAttributes(new FileInputStream(new File("resources/usedAttributes.properties").getAbsolutePath()));
 		} catch (FileNotFoundException e) {e.printStackTrace();
 		} catch (IOException e) {e.printStackTrace();}
     }
