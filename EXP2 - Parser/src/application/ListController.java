@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import inOut.Helper;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
@@ -13,6 +16,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.StringConverter;
 
@@ -37,14 +42,14 @@ public class ListController {
 	}
 
 	private class Triple extends Attribute{
-		final CheckBox checkBox;
-		public Triple(int nr, String name, CheckBox checkBox) {
+		final SimpleBooleanProperty isUsed;
+		public Triple(int nr, String name, SimpleBooleanProperty isUsed) {
 			super(nr,name);
-			this.checkBox = checkBox;
+			this.isUsed = isUsed;
 			this.name.addListener((x,o,n) -> {
 				helper.getJSONAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
 			});
-			this.checkBox.selectedProperty().addListener((x,o,n) -> {
+			this.isUsed.addListener((x,o,n) -> {
 				helper.getUsedAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
 			});
 		}
@@ -103,7 +108,7 @@ public class ListController {
     	this.tableView2.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     	TableColumn<Triple,Number> nr = new TableColumn<>();
     	TableColumn<Triple,String> name = new TableColumn<>();
-    	TableColumn<Triple,CheckBox> isUsed = new TableColumn<>();
+    	TableColumn<Triple,Boolean> isUsed = new TableColumn<>();
     	
     	nr.setEditable(false);
     	name.setEditable(true);
@@ -111,17 +116,18 @@ public class ListController {
     	
     	nr.setCellValueFactory(cellValue -> cellValue.getValue().nr);
     	name.setCellValueFactory(cellValue -> cellValue.getValue().name);
+    	isUsed.setCellValueFactory(cellValue -> cellValue.getValue().isUsed);
     	
     	name.setCellFactory(TextFieldTableCell.forTableColumn());
-    	name.setOnEditCommit(x -> x.getRowValue().name.set(x.getNewValue()));
+    	
+    	isUsed.setCellFactory(CheckBoxTableCell.forTableColumn(isUsed));
+    	
     	
     	this.tableView2.getColumns().add(nr);
     	this.tableView2.getColumns().add(name);
     	this.tableView2.getColumns().add(isUsed);
     	for(int i = 0;i<helper.getEXP2Attributes().size();i++) {
-			CheckBox cb = new CheckBox();
-			cb.setSelected(helper.isUsed(i+1));
-    		this.tableView2.getItems().add(new Triple(i+1,helper.getJSONName(i+1),cb));
+    		this.tableView2.getItems().add(new Triple(i+1,helper.getJSONName(i+1),new SimpleBooleanProperty(helper.isUsed(i+1))));
     	}
     }
 }
