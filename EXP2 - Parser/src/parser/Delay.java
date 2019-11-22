@@ -22,11 +22,11 @@ public class Delay {
 	}
 	
 	private static int getDays(int pD, int pM, int pY, int aD, int aM, int aY) throws IllegalArgumentException{
-		boolean isLeapYearPlanned = pY%4 == 0 ? (pY%100 == 0 ? (pY%400 != 0 ? true : false) : false) : false;
+		boolean isLeapYearPlanned = pY%4 == 0 ? (pY%400 == 0 ? true : (pY%100 != 0 ? true : false)) : false;
 		boolean isLeapYearActual = false;
 		int daysOfMonths = 0;
 		if(aY-pY != 0) {
-			isLeapYearActual = aY%4 == 0 ? (aY%100 == 0 ? (aY%400 != 0 ? true : false) : false) : false;
+			isLeapYearActual = aY%4 == 0 ? (aY%400 == 0 ? true : (aY%100 != 0 ? true : false)) : false;
 			int value = 0;
 			if(aY == 99 && pY == 0) {
 				value = -1;
