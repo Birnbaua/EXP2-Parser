@@ -62,8 +62,8 @@ public class MyController {
 			directory = fileChooser.getInitialDirectory();
 		}
 		fileChooser.setInitialDirectory(directory);
-		fileChooser.setTitle("Import txt files");
-		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text-Files (*.exp2)", "*.exp2"));
+		fileChooser.setTitle("Import EXP2 files");
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(".exp2", "*.exp2"));
 		List<File> files = fileChooser.showOpenMultipleDialog(stage);
 		if(files != null) {
 			this.listView.getItems().addAll(files);
