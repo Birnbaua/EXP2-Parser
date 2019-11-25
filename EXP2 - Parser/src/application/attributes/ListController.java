@@ -1,4 +1,4 @@
-package application;
+package application.attributes;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -113,6 +113,10 @@ public class ListController {
     	TableColumn<Triple,Number> nr = new TableColumn<>();
     	TableColumn<Triple,String> name = new TableColumn<>();
     	TableColumn<Triple,Boolean> isUsed = new TableColumn<>();
+    	
+    	nr.setText("Attribut number");
+    	name.setText("Attribute name JSON");
+    	isUsed.setText("Used");
     	
     	nr.setEditable(false);
     	name.setEditable(true);

@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
+import application.attributes.ListController;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -105,7 +106,7 @@ public class MyController {
     	Parent root;
     	FXMLLoader loader;
     	try {
-    		loader = new FXMLLoader(Main.class.getResource("Attributes.fxml"));
+    		loader = new FXMLLoader(ListController.class.getResource("Attributes.fxml"));
     		root = loader.load();
     		listController = loader.getController();
     		listController.setHelper(this.parser.getHelper());
