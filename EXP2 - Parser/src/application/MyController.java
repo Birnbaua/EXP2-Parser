@@ -16,6 +16,8 @@ import java.util.concurrent.Executors;
 import org.controlsfx.dialog.ProgressDialog;
 
 import application.attributes.ListController;
+import application.validation.ValidationController;
+import basics.ErrorLog;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -25,6 +27,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -70,15 +73,38 @@ public class MyController {
     
     @FXML
     void onValidate(ActionEvent event) {
-    	Task<List<Pair<String,Integer>>> worker = parser.validate(this.listView.getItems());
+    	Task<List<ErrorLog>> worker = parser.validate(this.listView.getItems());
     	ProgressDialog dialog = new ProgressDialog(worker);
     	dialog.setTitle("Validating files.");
     	dialog.setContentText("The program is validating all listed files now.");
     	exec.submit(worker);
     	dialog.showAndWait();
     	
-    	//check number of invalid records
-    	System.out.println(worker.getValue().size());
+    	Alert alert = new Alert(AlertType.CONFIRMATION);
+    	alert.setTitle("Show List");
+    	alert.setHeaderText("Do you want to show all errors?");
+    	alert.getButtonTypes().clear();
+    	ButtonType yes = new ButtonType("Yes");
+    	ButtonType no = new ButtonType("No");
+    	alert.getButtonTypes().addAll(yes,no);
+    	
+    	if(alert.showAndWait().get() == yes) {
+        	ValidationController validationController = null;
+        	Parent root;
+        	FXMLLoader loader;
+        	try {
+        		loader = new FXMLLoader(ValidationController.class.getResource("Validation.fxml"));
+        		root = loader.load();
+        		validationController = loader.getController();
+        		validationController.addList(worker.getValue());
+        		Stage stage = new Stage();
+        		stage.setTitle("Ergebnisse");
+        		stage.setScene(new Scene(root));
+        		stage.showAndWait();
+        	} catch(IOException e) {
+        		e.printStackTrace();
+        	}
+    	}
     }
     
     @FXML

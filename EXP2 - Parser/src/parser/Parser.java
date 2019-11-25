@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import basics.ErrorCategory;
+import basics.ErrorLog;
 import inOut.Helper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
@@ -32,34 +34,32 @@ public class Parser {
 		return counter;
 	}
 	
-	public Task<List<Pair<String,Integer>>> validate(List<File> files) {
-		return new Task<List<Pair<String,Integer>>>() {
+	public Task<List<ErrorLog>> validate(List<File> files) {
+		return new Task<List<ErrorLog>>() {
 			@Override
-			protected List<Pair<String,Integer>> call() throws Exception {
+			protected List<ErrorLog> call() throws Exception {
 				long startTime = System.currentTimeMillis();
-				List<Pair<String,Integer>> flawList = Collections.synchronizedList(new LinkedList<>());
+				List<ErrorLog> errList = Collections.synchronizedList(new LinkedList<>());
 				AtomicLong num = new AtomicLong(0);
 				files.parallelStream().forEach(x -> {
 					BufferedReader reader = null;
 					try {
 						reader = new BufferedReader(new FileReader(x.getAbsolutePath()));
 						String line = reader.readLine();
-						int i = 0;
 						while(line != null) {
-							i++;
 							updateProgress(num.incrementAndGet(),counter.longValue());
 							String[] arr = line.split(";");
 							if(arr.length != 95) {
-								flawList.add(new Pair<String,Integer>(x.getName(),i));
+								errList.add(new ErrorLog(arr[7],"",ErrorCategory.WRONG_FORMAT));
 							} else {
 								//if you want to check the individual fields, do it here
 								if(arr[0].length() != 4 || arr[1].length() != 4) {
-									flawList.add(new Pair<String,Integer>(x.getName(),i));
+									errList.add(new ErrorLog(arr[7],helper.getAttributeName(1),ErrorCategory.INVALID_VALUE));
 								}
 								// add attribute/record to the list 
 								for(Integer nr : helper.getUsedJSONAttributes()) {
 									if(arr[nr-1].length() == 0) {
-										flawList.add(new Pair<String,Integer>(x.getName(),i));
+										errList.add(new ErrorLog(arr[7],helper.getAttributeName(nr),ErrorCategory.NO_VALUE));
 									}
 								}
 								/*
@@ -78,7 +78,7 @@ public class Parser {
 				});
 				long endTime = System.currentTimeMillis();
 				System.out.println(endTime-startTime);
-				return flawList;
+				return errList;
 			}
     	};
 	}
