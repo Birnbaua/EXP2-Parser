@@ -157,7 +157,6 @@ public class Parser {
 						}
 					}
 					
-					
 					writer.write(']');
 					long endTime = System.currentTimeMillis();
 					System.out.println(endTime-startTime);
