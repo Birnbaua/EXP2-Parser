@@ -91,6 +91,7 @@ public class Parser {
 				long startTime = System.currentTimeMillis();
 				BufferedWriter writer = null;
 				BufferedReader reader = null;
+				TimeFormat format = new TimeFormat(1980,2079);
 				int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
 				int fileCounter = 0;
 				try {
@@ -106,7 +107,16 @@ public class Parser {
 							writer.write('{');
 							writer.newLine();
 							for(Integer nr : helper.getUsedJSONAttributes()) {
-								writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+								//if is time/date format
+								if(nr == 9 || nr == 10 || nr == 23 || nr == 24) {
+									if(nr == 9 || nr == 23) {
+										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseDate(arr[nr-1])));
+									} else {
+										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseTime(arr[nr-1])));
+									}
+								} else {
+									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+								}
 								if(nr != lastJSONAttribute) {
 									writer.write(',');
 								}
