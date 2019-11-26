@@ -14,8 +14,8 @@ public class TimeFormat {
 	
 	public String parseDate(String date) {
 		int year = Integer.valueOf(date.substring(0, 2));
-		if(year > firstYear%100 || year < lastYear%100) {
-			if(year > firstYear%100) {
+		if(year >= firstYear%100 || year <= lastYear%100) {
+			if(year >= firstYear%100) {
 				year += (firstYear/100)*100;
 			} else {
 				year += (lastYear/100)*100;
