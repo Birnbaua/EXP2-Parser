@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import basics.ErrorCategory;
 import basics.ErrorLog;
+import dbPedia.DBPediaAirportLinker;
 import inOut.Helper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
@@ -92,6 +93,7 @@ public class Parser {
 				BufferedWriter writer = null;
 				BufferedReader reader = null;
 				TimeFormat format = new TimeFormat(1980,2079);
+				DBPediaAirportLinker linker = new DBPediaAirportLinker();
 				int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
 				int fileCounter = 0;
 				try {
@@ -107,7 +109,18 @@ public class Parser {
 							writer.write('{');
 							writer.newLine();
 							for(Integer nr : helper.getUsedJSONAttributes()) {
-								//if is time/date format
+								//if it is an airport
+								if(nr == 1 || nr == 2) {
+									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+									writer.write(',');
+									writer.newLine();
+									if(nr == 1) {
+										writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", linker.getAirportURI(arr[nr-1])));
+									}else {
+										writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", linker.getAirportURI(arr[nr-1])));
+									}
+								}else 
+								//if it is time/date format
 								if(nr == 9 || nr == 10 || nr == 23 || nr == 24) {
 									if(nr == 9 || nr == 23) {
 										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseDate(arr[nr-1])));
@@ -125,13 +138,16 @@ public class Parser {
 							writer.write('}');
 							//one object end
 							line = reader.readLine();
-							if(line != null) {
-								writer.write(',');
-								writer.newLine();
-							}
+							
 							updateProgress(num.incrementAndGet(),number);
 							if(number == num.get()) {
+								writer.write(']');
+								long endTime = System.currentTimeMillis();
+								System.out.println(endTime-startTime);
 								return true;
+							} else if(line != null) {
+								writer.write(',');
+								writer.newLine();
 							}
 						}
 						fileCounter++;
@@ -140,9 +156,13 @@ public class Parser {
 							writer.newLine();
 						}
 					}
+					
+					
 					writer.write(']');
 					long endTime = System.currentTimeMillis();
 					System.out.println(endTime-startTime);
+					
+					
 					return true;
 				} catch (IOException e) {
 					e.printStackTrace();

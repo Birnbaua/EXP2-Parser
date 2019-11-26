@@ -124,6 +124,7 @@ public class MyController {
     	dialog.setContentText("The program is exporting all listed files now.");
     	exec.submit(worker);
     	dialog.showAndWait();
+    	System.out.print(worker.getValue());
     }
     
     @FXML
