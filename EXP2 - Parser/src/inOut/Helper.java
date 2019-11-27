@@ -11,7 +11,12 @@ public class Helper {
 	private Properties attributeNames = new Properties();
 	private Properties attributeJSONNames = new Properties();
 	private Properties usedAttributes = new Properties();
+	private Properties airportURIs = new Properties();
 	private final List<Integer> usedJSONAttributes = new LinkedList<>();
+	
+	public void loadAirportURIs(FileInputStream inStream) throws IOException {
+		airportURIs.load(inStream);
+	}
 	
 	public void loadAttributeNames(FileInputStream inStream) throws IOException {
 		attributeNames.load(inStream);
@@ -43,6 +48,10 @@ public class Helper {
 		}
 	}
 	
+	public void saveAirportURIs(FileOutputStream outStream) throws IOException{
+		airportURIs.store(outStream, "DBPedia URIs of ICAO airport codes");
+	}
+	
 	/**
 	 * 
 	 * @param nr Starts at 1
@@ -65,6 +74,10 @@ public class Helper {
 		return Boolean.valueOf(usedAttributes.get(Integer.toString(nr)).toString());
 	}
 	
+	public String getURI(String airport) {
+		return airportURIs.getProperty(airport);
+	}
+	
 	public Properties getJSONAttributes() {
 		return this.attributeJSONNames;
 	}
@@ -75,6 +88,10 @@ public class Helper {
 	
 	public Properties getUsedAttributes() {
 		return this.usedAttributes;
+	}
+	
+	public Properties getAirportURIs() {
+		return this.airportURIs;
 	}
 
 	public List<Integer> getUsedJSONAttributes() {

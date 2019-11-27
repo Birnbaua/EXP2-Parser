@@ -39,6 +39,10 @@ public class DBPediaAirportLinker {
     public String getAirportURI(String icao) {
         return airports.get(icao) != null ? airports.get(icao.toUpperCase()) : "";
     }
+    
+    public Map<String, String> getAirports(){
+    	return this.airports;
+    }
 
     private Map<String, String> receiveJSON(String query) {
         String response = "";

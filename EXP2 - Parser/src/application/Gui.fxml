@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MyController">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MyController">
    <center>
       <BorderPane prefHeight="241.0" prefWidth="779.0" BorderPane.alignment="CENTER">
          <top>
@@ -21,6 +21,7 @@
                   <Button fx:id="validateButton" mnemonicParsing="false" onAction="#onValidate" text="Validate Data" />
                   <Button fx:id="exportButton" mnemonicParsing="false" onAction="#onExport" text="Export to JSON" />
                   <Button fx:id="editAttributes" mnemonicParsing="false" onAction="#onEdit" text="Edit attributes" />
+                  <Button fx:id="refreshURIButton" mnemonicParsing="false" onAction="#onRefresh" text="Refresh URIs" />
               </buttons>
                <padding>
                   <Insets left="5.0" right="5.0" />

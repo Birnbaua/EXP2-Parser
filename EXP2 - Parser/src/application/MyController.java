@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,8 +20,10 @@ import org.controlsfx.dialog.ProgressDialog;
 import application.attributes.ListController;
 import application.validation.ValidationController;
 import basics.ErrorLog;
+import dbPedia.DBPediaAirportLinker;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -49,6 +53,8 @@ public class MyController {
     @FXML private Text recordCounter;
     @FXML private TextField getNumber;
     @FXML private CheckBox getAll;
+	@FXML private Button editAttributes;
+	@FXML private Button refreshURIButton;
     
     private File directory;
     private Parser parser = new Parser();
@@ -109,6 +115,27 @@ public class MyController {
     
     @FXML
     void onExport(ActionEvent event) {
+    	if(this.parser.getHelper().getAirportURIs().size() == 0) {
+    		Alert alert = new Alert(AlertType.CONFIRMATION);
+        	alert.setTitle("Show List");
+        	alert.setHeaderText("You have to reload the URIs from DBPedia, do you want to do that now?");
+        	alert.getButtonTypes().clear();
+        	ButtonType yes = new ButtonType("Yes");
+        	ButtonType no = new ButtonType("No");
+        	alert.getButtonTypes().addAll(yes,no);
+        	if(alert.showAndWait().get() == no) {
+        		return;
+        	} else {
+        		DBPediaAirportLinker linker = new DBPediaAirportLinker();
+        		for(Entry<String, String> entry : linker.getAirports().entrySet()) {
+        			parser.getHelper().getAirportURIs().put(entry.getKey(), entry.getValue());
+        		}
+        		try {
+            		this.parser.getHelper().saveAirportURIs(new FileOutputStream(new File("resources/airportURIs.properties").getAbsolutePath()));
+        		} catch (FileNotFoundException e) {e.printStackTrace();
+        		} catch (IOException e) {e.printStackTrace();}
+        	}
+    	}
     	Stage stage = new Stage();
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		if(directory != null) {
@@ -144,6 +171,30 @@ public class MyController {
     	} catch(IOException e) {
     		e.printStackTrace();
     	}
+    }
+    
+    @FXML 
+    void onRefresh() {
+    	Task<DBPediaAirportLinker> worker = new Task<DBPediaAirportLinker>() {
+			@Override
+			protected DBPediaAirportLinker call() throws Exception {return new DBPediaAirportLinker();}
+    	};
+    	ProgressDialog dialog = new ProgressDialog(worker);
+    	dialog.setTitle("Refreshing URIs.");
+    	dialog.setContentText("The program is refreshing all URIs from DBPedia now.");
+    	exec.submit(worker);
+    	dialog.showAndWait();
+    	if(worker.getValue().getAirports() == null || worker.getValue().getAirports().size() == 0) {
+    		return;
+    	}
+    	parser.getHelper().getAirportURIs().clear();
+		for(Entry<String, String> entry : worker.getValue().getAirports().entrySet()) {
+			parser.getHelper().getAirportURIs().put(entry.getKey(), entry.getValue());
+		}
+		try {
+    		this.parser.getHelper().saveAirportURIs(new FileOutputStream(new File("resources/airportURIs.properties").getAbsolutePath()));
+		} catch (FileNotFoundException e) {e.printStackTrace();
+		} catch (IOException e) {e.printStackTrace();}
     }
     
     @FXML
@@ -204,6 +255,12 @@ public class MyController {
     	//load used attributes in JSON file
     	try {
     		this.parser.getHelper().loadUsedAttributes(new FileInputStream(new File("resources/usedAttributes.properties").getAbsolutePath()));
+		} catch (FileNotFoundException e) {e.printStackTrace();
+		} catch (IOException e) {e.printStackTrace();}
+    	
+    	//load airportURIs file
+    	try {
+    		this.parser.getHelper().loadAirportURIs(new FileInputStream(new File("resources/airportURIs.properties").getAbsolutePath()));
 		} catch (FileNotFoundException e) {e.printStackTrace();
 		} catch (IOException e) {e.printStackTrace();}
     }
