@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,17 +13,18 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import basics.ErrorCategory;
 import basics.ErrorLog;
-import dbPedia.DBPediaAirportLinker;
 import inOut.Helper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.util.Pair;
 
 public class Parser {
 	private final Helper helper = new Helper();
 	private final SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
+	private boolean isWithAirportURIs = false;
+	
+	public Parser(boolean isWithAirportURIs) {
+		this.isWithAirportURIs = isWithAirportURIs;
+	}
 	
 	public Parser() {
 		
@@ -111,12 +110,14 @@ public class Parser {
 								//if it is an airport
 								if(nr == 1 || nr == 2) {
 									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
-									writer.write(',');
-									writer.newLine();
-									if(nr == 1) {
-										writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", helper.getAirportURI(arr[nr-1])));
-									}else {
-										writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", helper.getAirportURI(arr[nr-1])));
+									if(isWithAirportURIs) {
+										writer.write(',');
+										writer.newLine();
+										if(nr == 1) {
+											writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", helper.getAirportURI(arr[nr-1])));
+										}else {
+											writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", helper.getAirportURI(arr[nr-1])));
+										}
 									}
 								}else 
 								//if it is time/date format
@@ -241,5 +242,13 @@ public class Parser {
 
 	public Helper getHelper() {
 		return helper;
+	}
+	
+	public boolean isWithAirportURIs() {
+		return isWithAirportURIs;
+	}
+
+	public void setWithAirportURIs(boolean isWithAirportURIs) {
+		this.isWithAirportURIs = isWithAirportURIs;
 	}
 }

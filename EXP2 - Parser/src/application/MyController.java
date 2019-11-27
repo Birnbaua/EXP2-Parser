@@ -55,7 +55,8 @@ public class MyController {
     @FXML private CheckBox getAll;
 	@FXML private Button editAttributes;
 	@FXML private Button refreshURIButton;
-    
+	@FXML private CheckBox withURIs;
+	
     private File directory;
     private Parser parser = new Parser();
     ExecutorService exec = Executors.newSingleThreadScheduledExecutor();
@@ -143,7 +144,7 @@ public class MyController {
 		}
 		directoryChooser.setTitle("Choose Export Directory");
 		File file = directoryChooser.showDialog(stage);
-		
+		parser.setWithAirportURIs(withURIs.isSelected());
 		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
 				getAll.isSelected() ? this.parser.getCounter().longValue() : Long.parseLong(this.getNumber.getText()));
     	ProgressDialog dialog = new ProgressDialog(worker);
