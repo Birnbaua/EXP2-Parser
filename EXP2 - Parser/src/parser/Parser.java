@@ -93,7 +93,6 @@ public class Parser {
 				BufferedWriter writer = null;
 				BufferedReader reader = null;
 				TimeFormat format = new TimeFormat(1980,2079);
-				DBPediaAirportLinker linker = new DBPediaAirportLinker();
 				int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
 				int fileCounter = 0;
 				try {
@@ -115,9 +114,9 @@ public class Parser {
 									writer.write(',');
 									writer.newLine();
 									if(nr == 1) {
-										writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", linker.getAirportURI(arr[nr-1])));
+										writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", helper.getAirportURI(arr[nr-1])));
 									}else {
-										writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", linker.getAirportURI(arr[nr-1])));
+										writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", helper.getAirportURI(arr[nr-1])));
 									}
 								}else 
 								//if it is time/date format

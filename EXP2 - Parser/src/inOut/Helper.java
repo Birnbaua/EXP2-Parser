@@ -74,7 +74,7 @@ public class Helper {
 		return Boolean.valueOf(usedAttributes.get(Integer.toString(nr)).toString());
 	}
 	
-	public String getURI(String airport) {
+	public String getAirportURI(String airport) {
 		return airportURIs.getProperty(airport);
 	}
 	
