@@ -56,6 +56,16 @@
                   </HBox>
                   <HBox alignment="CENTER_LEFT" prefWidth="200.0">
                      <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Export with departure:" />
+                        <CheckBox fx:id="withDepartureDelay" mnemonicParsing="false" text="departure">
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
+                        </CheckBox>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" prefWidth="200.0">
+                     <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Export with Airport URIs: " />
                         <CheckBox fx:id="withURIs" mnemonicParsing="false" text="URIs">
                            <HBox.margin>

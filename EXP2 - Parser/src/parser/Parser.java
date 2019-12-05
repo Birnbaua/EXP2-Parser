@@ -21,6 +21,7 @@ public class Parser {
 	private final Helper helper = new Helper();
 	private final SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
 	private boolean isWithAirportURIs = false;
+	private boolean withDepartureDelay = false;
 	
 	public Parser(boolean isWithAirportURIs) {
 		this.isWithAirportURIs = isWithAirportURIs;
@@ -130,9 +131,13 @@ public class Parser {
 								} else {
 									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
 								}
-								if(nr != lastJSONAttribute) {
+								if(nr != lastJSONAttribute || withDepartureDelay) {
 									writer.write(',');
 								}
+								writer.newLine();
+							}
+							if(withDepartureDelay) {
+								writer.write(String.format("   \"departureDelay\": \"%d\"", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
 								writer.newLine();
 							}
 							writer.write('}');
@@ -250,5 +255,13 @@ public class Parser {
 
 	public void setWithAirportURIs(boolean isWithAirportURIs) {
 		this.isWithAirportURIs = isWithAirportURIs;
+	}
+
+	public boolean isWithDepartureDelay() {
+		return withDepartureDelay;
+	}
+
+	public void setWithDepartureDelay(boolean withDeparture) {
+		this.withDepartureDelay = withDeparture;
 	}
 }

@@ -57,6 +57,7 @@ public class Helper {
 				usedJSONAttributes.add(Integer.valueOf(o.toString()));
 			}
 		}
+		usedJSONAttributes.sort((a,b) ->  a-b);
 	}
 	
 	public void saveAirportURIs(FileOutputStream outStream) throws IOException{

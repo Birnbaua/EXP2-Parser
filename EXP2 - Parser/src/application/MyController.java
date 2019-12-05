@@ -1,15 +1,10 @@
 package application;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +12,6 @@ import java.util.concurrent.Executors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
-import com.sun.javafx.scene.control.skin.ButtonSkin;
 
 import application.attributes.ListController;
 import application.validation.ValidationController;
@@ -25,7 +19,6 @@ import basics.ErrorLog;
 import dbPedia.DBPediaAirportLinker;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -45,7 +38,6 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import parser.Parser;
 
 public class MyController {
@@ -61,6 +53,7 @@ public class MyController {
 	@FXML private Button editAttributes;
 	@FXML private Button refreshURIButton;
 	@FXML private CheckBox withURIs;
+	@FXML private CheckBox withDepartureDelay;
 	
     private File directory;
     private Parser parser = new Parser();
@@ -110,7 +103,7 @@ public class MyController {
         		validationController = loader.getController();
         		validationController.addList(worker.getValue());
         		Stage stage = new Stage();
-        		stage.setTitle("Ergebnisse");
+        		stage.setTitle("Results");
         		stage.setScene(new Scene(root));
         		stage.showAndWait();
         	} catch(IOException e) {
@@ -150,6 +143,7 @@ public class MyController {
 		directoryChooser.setTitle("Choose Export Directory");
 		File file = directoryChooser.showDialog(stage);
 		parser.setWithAirportURIs(withURIs.isSelected());
+		parser.setWithDepartureDelay(withDepartureDelay.isSelected());
 		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
 				getAll.isSelected() ? this.parser.getCounter().longValue() : Long.parseLong(this.getNumber.getText()));
     	ProgressDialog dialog = new ProgressDialog(worker);
