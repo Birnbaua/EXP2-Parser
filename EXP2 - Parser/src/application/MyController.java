@@ -17,6 +17,8 @@ import java.util.concurrent.Executors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
+import com.sun.javafx.scene.control.skin.ButtonSkin;
+
 import application.attributes.ListController;
 import application.validation.ValidationController;
 import basics.ErrorLog;
@@ -33,8 +35,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
@@ -168,6 +173,31 @@ public class MyController {
     		Stage stage = new Stage();
     		stage.setTitle("Ergebnisse");
     		stage.setScene(new Scene(root));
+    		
+    		//ask if changes should be saved
+    		ListController contr = listController;
+    		stage.setOnCloseRequest(event -> {
+    			if(contr.hasChanged()) {
+    				Alert alert = new Alert(AlertType.CONFIRMATION);
+                	alert.setTitle("Save");
+                	alert.setHeaderText("Do you want to save changes?");
+                	alert.getButtonTypes().clear();
+                	ButtonType yes = new ButtonType("Yes");
+                	ButtonType no = new ButtonType("No");
+                	alert.getButtonTypes().addAll(yes,no);
+                	if(alert.showAndWait().get() == yes) {
+                		contr.onSave();
+                	} else {
+                		try {
+    						this.parser.getHelper().loadAttributeNames(new FileInputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
+    			    		this.parser.getHelper().loadUsedAttributes(new FileInputStream(new File("resources/usedAttributes.properties").getAbsolutePath()));
+    			    		this.parser.getHelper().loadJSONNames(new FileInputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
+    					} catch (FileNotFoundException e) {e.printStackTrace();
+    					} catch (IOException e) {e.printStackTrace();}
+                	}
+    			}
+    		});
+    		
     		stage.showAndWait();
     	} catch(IOException e) {
     		e.printStackTrace();
@@ -234,12 +264,26 @@ public class MyController {
 			}
 		});
     	
-    	int[] arr = {1,2,8,9,10,13,23,24};
-    	List<Integer> list = new LinkedList<>();
-    	for(int i : arr) {
-    		list.add(i);
-    	}
-    	this.parser.getHelper().getUsedJSONAttributes().addAll(list);
+    	ContextMenu contextMenu = new ContextMenu();
+    	MenuItem remove = new MenuItem("Remove Selected");
+    	contextMenu.getItems().add(remove);
+    	remove.setOnAction(event -> {
+    		this.listView.getItems().removeAll(this.listView.getSelectionModel().getSelectedItems());
+    		
+    		/*
+    		 * counter subtraction 
+    		 */
+    	});
+    	
+    	this.listView.setOnMouseClicked(value -> {
+    		if(value.getButton().equals(MouseButton.PRIMARY)) {
+    			contextMenu.hide();
+    		}
+    	});
+    	
+    	this.listView.setOnContextMenuRequested(event -> {
+    		contextMenu.show(listView,event.getScreenX(),event.getScreenY());
+    	});
     	
     	//load attribute names
     	try {

@@ -5,21 +5,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import inOut.Helper;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.util.StringConverter;
 
 public class ListController {
 	private abstract class Attribute{
@@ -38,6 +32,7 @@ public class ListController {
 			this.name.addListener((x,o,n) -> {
 				helper.getEXP2Attributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
 				saveButton.setStyle("-fx-background-color: tomato; ");
+				hasChanged = true;
 			});
 		}
 	}
@@ -50,30 +45,38 @@ public class ListController {
 			this.name.addListener((x,o,n) -> {
 				helper.getJSONAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
 				saveButton.setStyle("-fx-background-color: tomato; ");
+				hasChanged = true;
 			});
 			this.isUsed.addListener((x,o,n) -> {
 				helper.getUsedAttributes().setProperty(String.valueOf(this.nr.get()), String.valueOf(n));
 				saveButton.setStyle("-fx-background-color: tomato; ");
+				hasChanged = true;
 			});
 		}
 	}
 	
 	private Helper helper = null;
+	private boolean hasChanged = false;
 
     @FXML private TableView<Pair> tableView1;
     @FXML private TableView<Triple> tableView2;
     @FXML private Button saveButton;
     
     @FXML
-    void onSave(ActionEvent event) {
+    public void onSave() {
     	try {
 			helper.saveJSONNames(new FileOutputStream(new File("resources/attributeJSONNames.properties").getAbsolutePath()));
 	    	helper.saveNames(new FileOutputStream(new File("resources/attributeNames.properties").getAbsolutePath()));
 	    	helper.saveUsedAttributes(new FileOutputStream(new File("resources/usedAttributes.properties").getAbsolutePath()));
 	    	saveButton.setStyle("-fx-background-color: whitesmoke; ");
+	    	hasChanged = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+    }
+    
+    public boolean hasChanged() {
+    	return this.hasChanged;
     }
 
     public void setHelper(Helper helper) {

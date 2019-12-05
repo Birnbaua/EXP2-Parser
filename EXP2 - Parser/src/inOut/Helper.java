@@ -28,6 +28,7 @@ public class Helper {
 	
 	public void loadUsedAttributes(FileInputStream inStream) throws IOException {
 		usedAttributes.load(inStream);
+		refreshUsedAttributes();
 	}
 	
 	public void saveJSONNames(FileOutputStream outStream) throws IOException {
@@ -45,6 +46,16 @@ public class Helper {
 	public void saveUsedAttributes(FileOutputStream outStream) throws IOException {
 		if(usedAttributes.size() == 95) {
 			usedAttributes.store(outStream,"Used JSON attributes.");
+		}
+		refreshUsedAttributes();
+	}
+	
+	private void refreshUsedAttributes() {
+		usedJSONAttributes.clear();
+		for(Object o : usedAttributes.keySet()) {
+			if(isUsed(Integer.valueOf(o.toString()))) {
+				usedJSONAttributes.add(Integer.valueOf(o.toString()));
+			}
 		}
 	}
 	
