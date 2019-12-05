@@ -56,8 +56,8 @@
                   </HBox>
                   <HBox alignment="CENTER_LEFT" prefWidth="200.0">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Export with departure:" />
-                        <CheckBox fx:id="withDepartureDelay" mnemonicParsing="false" text="departure">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Export with departure delay:" />
+                        <CheckBox fx:id="withDepartureDelay" mnemonicParsing="false" text="delay">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>
