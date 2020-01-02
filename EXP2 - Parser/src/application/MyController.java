@@ -80,6 +80,9 @@ public class MyController {
     
     @FXML
     void onValidate(ActionEvent event) {
+		parser.setWithAirportURIs(withURIs.isSelected());
+		parser.setWithDepartureDelay(withDepartureDelay.isSelected());
+		parser.setIsWithErrors(this.exportWithErrors.isSelected());
     	Task<List<ErrorLog>> worker = parser.validate(this.listView.getItems());
     	ProgressDialog dialog = new ProgressDialog(worker);
     	dialog.setTitle("Validating files.");
@@ -146,6 +149,7 @@ public class MyController {
 		File file = directoryChooser.showDialog(stage);
 		parser.setWithAirportURIs(withURIs.isSelected());
 		parser.setWithDepartureDelay(withDepartureDelay.isSelected());
+		parser.setIsWithErrors(this.exportWithErrors.isSelected());
 		Task<AtomicLong> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
 				getAll.isSelected() ? this.parser.getCounter().longValue() : Long.parseLong(this.getNumber.getText()));
 		

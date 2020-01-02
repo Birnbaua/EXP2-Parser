@@ -22,6 +22,7 @@ public class Parser {
 	private final SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
 	private boolean isWithAirportURIs = false;
 	private boolean withDepartureDelay = false;
+	private boolean isWithErrors = false;
 	
 	public Parser(boolean isWithAirportURIs) {
 		this.isWithAirportURIs = isWithAirportURIs;
@@ -89,7 +90,7 @@ public class Parser {
 						String line = reader.readLine();
 						while(line != null) {
 							String[] arr = line.split(";");
-							if(isValid(arr,errList)) {
+							if(isValid(arr,errList) || isWithErrors) {
 								//one object start
 								writer.write('{');
 								writer.newLine();
@@ -171,104 +172,6 @@ public class Parser {
 			}
 			
 		};
-	}
-	
-	public AtomicLong export(List<File> list, File destination, long number) {
-		AtomicLong num = new AtomicLong(0);
-		AtomicLong numberOfExportedLines = new AtomicLong(0);
-		List<ErrorLog> errList = new LinkedList<>();
-		long startTime = System.currentTimeMillis();
-		BufferedWriter writer = null;
-		BufferedReader reader = null;
-		TimeFormat format = new TimeFormat(1980,2079);
-		int lastJSONAttribute = helper.getUsedJSONAttributes().get(helper.getUsedJSONAttributes().size()-1);
-		int fileCounter = 0;
-		try {
-			writer = new BufferedWriter(new FileWriter(destination,false));
-			writer.write('[');
-			for(File file : list) {
-				reader = new BufferedReader(new FileReader(file));
-				String line = reader.readLine();
-				while(line != null) {
-					String[] arr = line.split(";");
-					if(isValid(arr,errList)) {
-						//one object start
-						writer.write('{');
-						writer.newLine();
-						numberOfExportedLines.incrementAndGet();
-						for(Integer nr : helper.getUsedJSONAttributes()) {
-							//if it is an airport
-							if(nr == 1 || nr == 2) {
-								writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
-								if(isWithAirportURIs) {
-									writer.write(',');
-									writer.newLine();
-									String airportURI = helper.getAirportURI(arr[nr-1]);
-									if(nr == 1) {
-										writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", airportURI));
-									}else {
-										writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", airportURI));
-									}
-								}
-							}else 
-							//if it is time/date format
-							if(nr == 9 || nr == 10 || nr == 23 || nr == 24) {
-								if(nr == 9 || nr == 23) {
-									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseDate(arr[nr-1])));
-								} else {
-									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseTime(arr[nr-1])));
-								}
-							} else {
-								writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
-							}
-							if(nr != lastJSONAttribute || withDepartureDelay) {
-								writer.write(',');
-							}
-							writer.newLine();
-						}
-						if(withDepartureDelay) {
-							writer.write(String.format("   \"departureDelay\": \"%d\"", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
-							writer.newLine();
-						}
-						writer.write('}');
-						//one object end
-					}
-					line = reader.readLine();
-					
-					if(number == num.get()) {
-						writer.write(']');
-						long endTime = System.currentTimeMillis();
-						System.out.println(endTime-startTime);
-						return numberOfExportedLines;
-					} else if(line != null) {
-						writer.write(',');
-						writer.newLine();
-					}
-				}
-				fileCounter++;
-				if(fileCounter != list.size()) {
-					writer.write(',');
-					writer.newLine();
-				}
-			}
-			
-			writer.write(']');
-			long endTime = System.currentTimeMillis();
-			System.out.println(endTime-startTime);
-			
-			
-			return numberOfExportedLines;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return numberOfExportedLines;
-		} finally {
-			if(writer != null) {
-				try {writer.close();} catch (IOException e) {e.printStackTrace();}
-			}
-			if(reader != null) {
-				try {reader.close();} catch (IOException e) {e.printStackTrace();}
-			}
-		}
 	}
 	
 	public Task<Long> refreshCounter(List<? extends File> added, List<? extends File> removed) {
@@ -396,5 +299,13 @@ public class Parser {
 
 	public void setWithDepartureDelay(boolean withDeparture) {
 		this.withDepartureDelay = withDeparture;
+	}
+	
+	public boolean isWithErrors() {
+		return isWithErrors;
+	}
+
+	public void setIsWithErrors(boolean withErrors) {
+		this.isWithErrors = withErrors;
 	}
 }
