@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.controlsfx.dialog.ProgressDialog;
 
@@ -145,14 +146,16 @@ public class MyController {
 		File file = directoryChooser.showDialog(stage);
 		parser.setWithAirportURIs(withURIs.isSelected());
 		parser.setWithDepartureDelay(withDepartureDelay.isSelected());
-		Task<Boolean> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
+		Task<AtomicLong> worker = parser.exportAsJson(this.listView.getItems(), new File(file.getAbsoluteFile() + "//converted.json"), 
 				getAll.isSelected() ? this.parser.getCounter().longValue() : Long.parseLong(this.getNumber.getText()));
+		
     	ProgressDialog dialog = new ProgressDialog(worker);
     	dialog.setTitle("Exporting files.");
     	dialog.setContentText("The program is exporting all listed files now.");
     	exec.submit(worker);
     	dialog.showAndWait();
     	System.out.print(worker.getValue());
+    	
     }
     
     @FXML
