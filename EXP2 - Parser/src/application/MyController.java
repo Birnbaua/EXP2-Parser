@@ -54,6 +54,7 @@ public class MyController {
 	@FXML private Button refreshURIButton;
 	@FXML private CheckBox withURIs;
 	@FXML private CheckBox withDepartureDelay;
+	@FXML private CheckBox exportWithErrors;
 	
     private File directory;
     private Parser parser = new Parser();

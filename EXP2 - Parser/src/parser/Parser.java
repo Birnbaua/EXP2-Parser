@@ -103,45 +103,46 @@ public class Parser {
 						String line = reader.readLine();
 						while(line != null) {
 							String[] arr = line.split(";");
-							
-							//one object start
-							writer.write('{');
-							writer.newLine();
-							for(Integer nr : helper.getUsedJSONAttributes()) {
-								//if it is an airport
-								if(nr == 1 || nr == 2) {
-									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
-									if(isWithAirportURIs) {
-										writer.write(',');
-										writer.newLine();
-										if(nr == 1) {
-											writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", helper.getAirportURI(arr[nr-1])));
-										}else {
-											writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", helper.getAirportURI(arr[nr-1])));
+							if(isValid(arr)) {
+								//one object start
+								writer.write('{');
+								writer.newLine();
+								for(Integer nr : helper.getUsedJSONAttributes()) {
+									//if it is an airport
+									if(nr == 1 || nr == 2) {
+										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+										if(isWithAirportURIs) {
+											writer.write(',');
+											writer.newLine();
+											if(nr == 1) {
+												writer.write(String.format("   \"%s\": \"%s\"", "origin_uri", helper.getAirportURI(arr[nr-1])));
+											}else {
+												writer.write(String.format("   \"%s\": \"%s\"", "destination_uri", helper.getAirportURI(arr[nr-1])));
+											}
 										}
-									}
-								}else 
-								//if it is time/date format
-								if(nr == 9 || nr == 10 || nr == 23 || nr == 24) {
-									if(nr == 9 || nr == 23) {
-										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseDate(arr[nr-1])));
+									}else 
+									//if it is time/date format
+									if(nr == 9 || nr == 10 || nr == 23 || nr == 24) {
+										if(nr == 9 || nr == 23) {
+											writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseDate(arr[nr-1])));
+										} else {
+											writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseTime(arr[nr-1])));
+										}
 									} else {
-										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseTime(arr[nr-1])));
+										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
 									}
-								} else {
-									writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+									if(nr != lastJSONAttribute || withDepartureDelay) {
+										writer.write(',');
+									}
+									writer.newLine();
 								}
-								if(nr != lastJSONAttribute || withDepartureDelay) {
-									writer.write(',');
+								if(withDepartureDelay) {
+									writer.write(String.format("   \"departureDelay\": \"%d\"", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
+									writer.newLine();
 								}
-								writer.newLine();
+								writer.write('}');
+								//one object end
 							}
-							if(withDepartureDelay) {
-								writer.write(String.format("   \"departureDelay\": \"%d\"", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
-								writer.newLine();
-							}
-							writer.write('}');
-							//one object end
 							line = reader.readLine();
 							
 							updateProgress(num.incrementAndGet(),number);
@@ -243,7 +244,39 @@ public class Parser {
 		
 	}
 	
-	
+	private boolean isValid(String[] arr) {
+		if(arr.length != 95) {
+			return false;
+		} else {
+			for(Integer nr : helper.getUsedJSONAttributes()) {
+				if(arr[nr-1].length() == 0) {
+					return false;
+				}
+			}
+			
+			//airports
+			if(arr[0].length() != 4 || arr[1].length() != 4) {
+				return false;
+			} else if(isWithAirportURIs && (helper.getAirportURI(arr[0]) == null || helper.getAirportURI(arr[1]) == null)) {
+				return false;
+			}
+			
+			//validate format of departure dates and time
+			if(arr[8].length() != 6 || arr[9].length() != 4 || arr[22].length() != 6 || arr[23].length() != 4) {
+				return false;
+			} else {
+				try {
+					int[] nr = {8,9,22,23};
+					for(int n : nr) {
+						Integer.parseInt(arr[n]);
+					}
+				} catch(NumberFormatException e) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	public Helper getHelper() {
 		return helper;

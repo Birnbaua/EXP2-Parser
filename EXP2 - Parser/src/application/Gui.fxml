@@ -74,6 +74,16 @@
                         </CheckBox>
                      </children>
                   </HBox>
+                  <HBox alignment="CENTER_LEFT" prefWidth="200.0">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Export with Errors: " />
+                        <CheckBox fx:id="exportWithErrors" mnemonicParsing="false" text="Errors">
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
+                        </CheckBox>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </left>
