@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 import basics.ErrorCategory;
@@ -23,6 +25,7 @@ public class Parser {
 	private boolean isWithAirportURIs = false;
 	private boolean withDepartureDelay = false;
 	private boolean isWithErrors = false;
+	private Set<Integer> idSet = new TreeSet<>();
 	
 	public Parser(boolean isWithAirportURIs) {
 		this.isWithAirportURIs = isWithAirportURIs;
@@ -73,6 +76,7 @@ public class Parser {
 		return new Task<AtomicLong>() {
 			@Override
 			protected AtomicLong call() throws Exception {
+				idSet.clear();
 				AtomicLong num = new AtomicLong(0);
 				AtomicLong numberOfExportedLines = new AtomicLong(0);
 				List<ErrorLog> errList = new LinkedList<>();
@@ -90,7 +94,9 @@ public class Parser {
 						String line = reader.readLine();
 						while(line != null) {
 							String[] arr = line.split(";");
-							if(isValid(arr,errList) || isWithErrors) {
+							boolean isWritten = false;
+							if((isValid(arr,errList) || isWithErrors) && isAlreadyInJson(Integer.parseInt(arr[7])) == false) {
+								isWritten = true;
 								//one object start
 								writer.write('{');
 								writer.newLine();
@@ -118,7 +124,11 @@ public class Parser {
 											writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), format.parseTime(arr[nr-1])));
 										}
 									} else {
-										writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+										if(nr == 8) {
+											writer.write(String.format("   \"%s\": %s", helper.getJSONName(nr), arr[nr-1]));
+										} else {
+											writer.write(String.format("   \"%s\": \"%s\"", helper.getJSONName(nr), arr[nr-1]));
+										}
 									}
 									if(nr != lastJSONAttribute || withDepartureDelay) {
 										writer.write(',');
@@ -126,7 +136,7 @@ public class Parser {
 									writer.newLine();
 								}
 								if(withDepartureDelay) {
-									writer.write(String.format("   \"departureDelay\": \"%d\"", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
+									writer.write(String.format("   \"departureDelay\": %d", Delay.getDelay(arr[22], arr[23], arr[8], arr[9])));
 									writer.newLine();
 								}
 								writer.write('}');
@@ -135,15 +145,16 @@ public class Parser {
 							line = reader.readLine();
 							
 							updateProgress(num.incrementAndGet(),number);
-							if(number == num.get()) {
+							if(number == numberOfExportedLines.get()) {
 								writer.write(']');
 								long endTime = System.currentTimeMillis();
 								System.out.println(endTime-startTime);
 								return numberOfExportedLines;
-							} else if(line != null) {
+							} else if(line != null && isWritten) {
 								writer.write(',');
 								writer.newLine();
 							}
+							isWritten = false;
 						}
 						fileCounter++;
 						if(fileCounter != list.size()) {
@@ -307,5 +318,14 @@ public class Parser {
 
 	public void setIsWithErrors(boolean withErrors) {
 		this.isWithErrors = withErrors;
+	}
+	
+	private boolean isAlreadyInJson(int id) {
+		if(idSet.contains(id)) {
+			return true;
+		} else {
+			idSet.add(id);
+			return false;
+		}
 	}
 }
